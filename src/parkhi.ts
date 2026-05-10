@@ -1,4 +1,6 @@
 import { ErrorCode, ParkhiError } from "./error.ts";
+import { Id3V23Parser } from "./id3V2/id3V23Parser.ts";
+import { Id3V24Parser } from "./id3V2/id3V24Parser.ts";
 import { useLogging } from "./logging.ts";
 import { type Metadata, type Parser } from "./parser.ts";
 
@@ -6,7 +8,9 @@ const { debug } = useLogging("parkhi");
 
 export enum ParserType {
   None = 0,
-  All = None,
+  Id3V23 = 1 << 0,
+  Id3V24 = 1 << 1,
+  All = None | Id3V23 | Id3V24,
 }
 
 export class Parkhi {
@@ -15,6 +19,18 @@ export class Parkhi {
   private done = false;
 
   constructor(parserType: ParserType = ParserType.All, customParsers: Parser[] = []) {
+    if ((parserType & ParserType.Id3V23) != 0) {
+      const parser = new Id3V23Parser();
+      debug(`adding ${parser.name}`);
+      this.parsers.add(parser);
+    }
+
+    if ((parserType & ParserType.Id3V24) != 0) {
+      const parser = new Id3V24Parser();
+      debug(`adding ${parser.name}`);
+      this.parsers.add(parser);
+    }
+
     for (const parser of customParsers) {
       debug(`adding ${parser.name}`);
       this.parsers.add(parser);
