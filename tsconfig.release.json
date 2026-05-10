@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": ["src/cli.ts", "tests/**/*"],
+  "compilerOptions": {
+    "outDir": "./build/release"
+  }
+}
