@@ -35,7 +35,7 @@ To know if Parkhi is good for your use case, how to install, use and extend it, 
 First do the debug build to get tests and CLI.
 
 ```sh
-$ npm run build:debug
+$ pnpm run build:debug
 ```
 
 The built files now will be located in `build/debug` directory.
@@ -43,10 +43,10 @@ The built files now will be located in `build/debug` directory.
 ### Running tests
 
 Parkhi uses [Node's builtin test framework](https://nodejs.org/api/test.html). You can invoke it
-directly or use the shortcut `npm run test`.
+directly or use the shortcut `pnpm run test`.
 
 ```sh
-$ npm run test
+$ pnpm run test
 ```
 
 ### Testing with a media file
@@ -60,10 +60,10 @@ $ node build/debug/src/cli.js /path/to/media/file
 
 ### Building for release
 
-The release build excludes tests and CLI. Invoke a release build by using `npm run build:release`.
+The release build excludes tests and CLI. Invoke a release build by using `pnpm run build:release`.
 
 ```sh
-$ npm run build:release
+$ pnpm run build:release
 ```
 
 `build/release` will now have the built files.
