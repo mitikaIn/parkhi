@@ -4,6 +4,7 @@
     "module": "nodeNext",
     "moduleResolution": "nodeNext",
     "target": "esNext",
+    "types": ["node"],
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
