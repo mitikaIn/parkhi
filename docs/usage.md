@@ -268,19 +268,18 @@ try {
 ## Logging
 
 Parkhi emits logs that can be useful for debugging and sharing progress to the user. By default, it
-does write the logs anywhere, so you have to register handlers to consume them.
+does not write the logs anywhere, so you have to register handlers to consume them.
 
-Use [`setLogFunction`](./api.md#setLogFunction) to register the function as handler for given
-[log level](./api.md#logLevel).
+Use [`setHandler`](./api.md#setHandler) to register the function as handler.
 
 ```typescript
-import { type LogLevel, setLogFunction } from "@mitikaIn/parkhi/logging";
+import { Level, setHandler } from "@mitikaIn/parkhi/logging";
 
-function writeError(component: string, message: string) {
-  console.error(component, message);
+function consoleLogger(level: Level, component: string, message: string) {
+  console.log(level, component, message);
 }
 
-setLogFunction(LogLevel.Error, writeError);
+setHandler(consoleLogger);
 ```
 
 ## Custom parsers

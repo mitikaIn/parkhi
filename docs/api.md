@@ -221,15 +221,19 @@ Represents an internal error. Please report it to us.
 Represents an unknown metadata format. This is thrown when no parser can parse metadata from the
 data.
 
-## `function setLogFunction(level: LogLevel, logFunction: LogFunction)`
+## `function setHandler(newHandler: Handler)`
 
-<a name="setLogFunction"></a>
+<a name="setHandler"></a>
 
-Registers the `logFunction` as the handler for logs of given `level`.
+Registers the `newHandler` as the handler for logs.
 
-## `enum LogLevel`
+## `type Handler = (level: Level, component: string, message: string) => void`
 
-<a name="logLevel"></a>
+The semantics of logs handler registered with [`setHandler`](#setHandler).
+
+## `enum Level`
+
+<a name="Level"></a>
 
 Represents the different levels of logs.
 
@@ -249,37 +253,33 @@ Warnings emitted during the parsing flow.
 
 Critical errors faced during the parsing flow.
 
-## `type LogFunction = (component: string, message: string) => void`
-
-The semantics of a log function registered with [`setLogFunction`](#setLogFunction).
-
-## `useLogging(component: string): ComponentLogFunctions`
+## `useLogger(component: string): Logger`
 
 This function returns logging functions that logs under `component` scope. It can be used by
 [custom parsers](./usage.md#customParsers) to emit logs under the same channel as the rest of
 Parkhi.
 
 ```typescript
-import { useLogging } from "@mitikaIn/parkhi/logging";
+import { useLogger } from "@mitikaIn/parkhi/logging";
 
-const { error } = useLogging("myParser");
+const { error } = useLogger("myParser");
 
 error("oops something went wrong");
 ```
 
-## `interface ComponentLogFunctions`
+## `interface Logger`
 
 The different log functions for the component for each log level.
 
-### `debug: ComponentLogFunction`
+### `debug: LogFn`
 
-### `info: ComponentLogFunction`
+### `info: LogFn`
 
-### `warn: ComponentLogFunction`
+### `warn: LogFn`
 
-### `error: ComponentLogFunction`
+### `error: LogFn`
 
-## `type ComponentLogFunction = (message: string) => void`
+## `type LogFn = (message: string) => void`
 
 Writes `message` as a log for the given log level and component for which it was registered.
 

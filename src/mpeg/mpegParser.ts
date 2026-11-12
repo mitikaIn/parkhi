@@ -1,12 +1,12 @@
 import { Buffer } from "../buffer.ts";
 import { ErrorCode, ParkhiError } from "../error.ts";
-import { useLogging } from "../logging.ts";
+import { useLogger } from "../logging.ts";
 import { MetadataType } from "../metadataType.ts";
 import { type Metadata, type Parser } from "../parser.ts";
 import { decodeAscii, parseU32 } from "../utils.ts";
 import { BoxType, type Chap, parseChapName, parseFtyp, parseMoov } from "./boxes.ts";
 
-const { debug } = useLogging("mpegParser");
+const { debug } = useLogger("mpegParser");
 
 enum State {
   Size,

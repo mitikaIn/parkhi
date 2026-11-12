@@ -1,6 +1,6 @@
 import { Buffer } from "../buffer.ts";
 import { ErrorCode, ParkhiError } from "../error.ts";
-import { useLogging } from "../logging.ts";
+import { useLogger } from "../logging.ts";
 import { MetadataType } from "../metadataType.ts";
 import { type Metadata, type Parser } from "../parser.ts";
 import {
@@ -20,7 +20,7 @@ import {
   throwLengthMismatchError,
 } from "./frames.ts";
 
-const { debug } = useLogging("id3V24Parser");
+const { debug } = useLogger("id3V24Parser");
 
 export class Id3V24Parser implements Parser {
   name = "Id3V24Parser";

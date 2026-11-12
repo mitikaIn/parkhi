@@ -1,11 +1,11 @@
 import { ErrorCode, ParkhiError } from "./error.ts";
 import { Id3V23Parser } from "./id3V2/id3V23Parser.ts";
 import { Id3V24Parser } from "./id3V2/id3V24Parser.ts";
-import { useLogging } from "./logging.ts";
+import { useLogger } from "./logging.ts";
 import { MpegParser } from "./mpeg/mpegParser.ts";
 import { type Metadata, type Parser } from "./parser.ts";
 
-const { debug } = useLogging("parkhi");
+const { debug } = useLogger("parkhi");
 
 export enum ParserType {
   None = 0,

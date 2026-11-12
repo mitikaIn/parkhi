@@ -1,41 +1,32 @@
-import { ErrorCode, ParkhiError } from "./error.ts";
-
-export enum LogLevel {
+export enum Level {
   Debug,
   Info,
   Warn,
   Error,
 }
 
-export type LogFunction = (component: string, message: string) => void;
+export type Handler = (level: Level, component: string, message: string) => void;
 
-let debug: LogFunction = () => {};
-let info: LogFunction = () => {};
-let warn: LogFunction = () => {};
-let error: LogFunction = () => {};
+let handler: Handler = () => {};
 
-export function setLogFunction(level: LogLevel, logFunction: LogFunction) {
-  if (level == LogLevel.Debug) debug = logFunction;
-  else if (level == LogLevel.Info) info = logFunction;
-  else if (level == LogLevel.Warn) warn = logFunction;
-  else if (level == LogLevel.Error) error = logFunction;
-  else throw new ParkhiError(ErrorCode.Internal, `unknown level ${level}`);
+export function setHandler(newHandler: Handler) {
+  handler = newHandler;
 }
 
-export type ComponentLogFunction = (message: string) => void;
+export type LogFn = (message: string) => void;
 
-export interface ComponentLogFunctions {
-  debug: ComponentLogFunction;
-  info: ComponentLogFunction;
-  warn: ComponentLogFunction;
-  error: ComponentLogFunction;
+export interface Logger {
+  debug: LogFn;
+  info: LogFn;
+  warn: LogFn;
+  error: LogFn;
 }
 
-export function useLogging(component: string): ComponentLogFunctions {
+export function useLogger(component: string): Logger {
   return {
-    debug: (message) => debug(component, message),
-    info: (message) => info(component, message),
-    warn: (message) => warn(component, message),
-    error: (message) => error(component, message),
+    debug: (message: string) => handler(Level.Debug, component, message),
+    info: (message: string) => handler(Level.Info, component, message),
+    warn: (message: string) => handler(Level.Warn, component, message),
+    error: (message: string) => handler(Level.Error, component, message),
   };
 }

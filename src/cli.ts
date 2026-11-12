@@ -1,12 +1,12 @@
 import { ErrorCode, ParkhiError } from "./error.ts";
-import { LogLevel, setLogFunction, useLogging } from "./logging.ts";
+import { Level, setHandler, useLogger } from "./logging.ts";
 import { Parkhi, ParserType } from "./parkhi.ts";
 import type { Chapter, Metadata } from "./parser.ts";
 import { createReadStream } from "node:fs";
 import { argv, argv0 } from "node:process";
 import { type InspectColor, styleText } from "node:util";
 
-const { error } = useLogging("parkhi");
+const { error } = useLogger("parkhi");
 
 function bold(text: string): string {
   return styleText("bold", text);
@@ -62,18 +62,15 @@ function format(color: InspectColor, level: string, component: string, message: 
   return `${styleText(["bold", color], level)} ${styleText("bold", component)}: ${message}`;
 }
 
-setLogFunction(LogLevel.Debug, (component, message) =>
-  console.debug(format("cyan", "DEBUG", component, message)),
-);
-setLogFunction(LogLevel.Info, (component, message) =>
-  console.info(format("blue", "INFO", component, message)),
-);
-setLogFunction(LogLevel.Warn, (component, message) =>
-  console.warn(format("yellow", "WARN", component, message)),
-);
-setLogFunction(LogLevel.Error, (component, message) =>
-  console.error(format("red", "ERROR", component, message)),
-);
+function consoleLogger(level: Level, component: string, message: string) {
+  if (level == Level.Debug) console.debug(format("cyan", "DEBUG", component, message));
+  else if (level == Level.Info) console.info(format("blue", "INFO", component, message));
+  else if (level == Level.Warn) console.warn(format("yellow", "WARN", component, message));
+  else if (level == Level.Error) console.error(format("red", "ERROR", component, message));
+  else throw new ParkhiError(ErrorCode.Internal, `unknown level ${level}`);
+}
+
+setHandler(consoleLogger);
 
 const path = argv[2];
 if (!path) {

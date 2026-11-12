@@ -1,8 +1,8 @@
 import { ErrorCode, ParkhiError } from "../error.ts";
-import { useLogging } from "../logging.ts";
+import { useLogger } from "../logging.ts";
 import { decodeAscii, decodeUtf, decodeUtf8, decodeUtf16Be, parseU32 } from "../utils.ts";
 
-const { debug, warn } = useLogging("mpegParser");
+const { debug, warn } = useLogger("mpegParser");
 
 export enum BoxType {
   Chap = "chap",
