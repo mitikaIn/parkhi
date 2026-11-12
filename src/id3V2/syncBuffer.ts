@@ -4,11 +4,11 @@ export function resynchronise(ff: boolean, data: Uint8Array): { data: Uint8Array
   let i = 0;
 
   for (const byte of data) {
-    if (!(byte == 0x00 && ff)) {
+    if (!(byte === 0x00 && ff)) {
       data[i] = byte;
       i += 1;
     }
-    ff = byte == 0xff;
+    ff = byte === 0xff;
   }
 
   return { data: data.subarray(0, i), ff };
@@ -32,7 +32,7 @@ export class SyncBuffer implements Pick<Buffer, keyof Buffer> {
   }
 
   get done() {
-    return this.readLength == this.maxLength;
+    return this.readLength === this.maxLength;
   }
 
   get rejected() {
@@ -40,13 +40,13 @@ export class SyncBuffer implements Pick<Buffer, keyof Buffer> {
   }
 
   push(chunk: Uint8Array) {
-    if (chunk.length == 0) return;
+    if (chunk.length === 0) return;
     if (this.done) return;
 
     const readableLength = Math.min(this.maxLength - this.readLength, chunk.length);
     const rejected = chunk.subarray(readableLength);
     chunk = chunk.subarray(0, readableLength);
-    if (rejected.length != 0) this.rejectedChunks.push(rejected);
+    if (rejected.length !== 0) this.rejectedChunks.push(rejected);
 
     const result = resynchronise(this.ff, chunk);
     this.buffer.push(result.data);

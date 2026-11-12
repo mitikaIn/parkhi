@@ -20,14 +20,14 @@ export async function compressData(data: Uint8Array): Promise<Uint8Array> {
 }
 
 export function unsynchronise(data: Uint8Array): Uint8Array {
-  const ffsCount = data.reduce((count, value) => (value == 0xff ? count + 1 : count), 0);
+  const ffsCount = data.reduce((count, value) => (value === 0xff ? count + 1 : count), 0);
   const result = new Uint8Array(data.length + ffsCount);
 
   let i = 0;
   for (const value of data) {
     result[i] = value;
     i += 1;
-    if (value == 0xff) {
+    if (value === 0xff) {
       result[i] = 0x00;
       i += 1;
     }
@@ -64,7 +64,7 @@ export async function makeV23FrameBody(
     data = await compressData(data);
   }
 
-  let encryptionId = new Uint8Array(0);
+  const encryptionId = new Uint8Array(0);
   if (encrypt) data = new Uint8Array(data.length);
 
   let groupingIdentity = new Uint8Array(0);
@@ -128,7 +128,7 @@ export async function makeV24FrameBody(
 
   if (compress) data = await compressData(data);
 
-  let encryptionId = new Uint8Array(0);
+  const encryptionId = new Uint8Array(0);
   if (encrypt) data = new Uint8Array(data.length);
 
   if (doUnsynchronise) data = unsynchronise(data);
@@ -169,7 +169,7 @@ export function makeV23Tag(
   if (doUnsynchronise) framesData = unsynchronise(framesData);
 
   let extendedHeader = new Uint8Array(0) as Uint8Array<ArrayBufferLike>;
-  if (paddingSize != 0) {
+  if (paddingSize !== 0) {
     const extendedHeaderSize = 10;
     const extendedHeaderFlags = 0b10000000;
     const crc = new Uint8Array(4);
@@ -183,7 +183,7 @@ export function makeV23Tag(
 
   let flags = 0x00;
   if (doUnsynchronise) flags |= 0b10000000;
-  if (paddingSize != 0) flags |= 0b01000000;
+  if (paddingSize !== 0) flags |= 0b01000000;
   const header = concat(
     encodeAscii("ID3"),
     [0x03, 0x00],
@@ -205,7 +205,7 @@ export function makeV24Tag(
   let extendedHeader = new Uint8Array(0) as Uint8Array<ArrayBufferLike>;
   if (isUpdate) {
     const extendedHeaderSize = 6;
-    let extendedHeaderFlags = 0b01000000;
+    const extendedHeaderFlags = 0b01000000;
     extendedHeader = concat(encodeSyncSafeSize(extendedHeaderSize), [0x01, extendedHeaderFlags]);
   }
 

@@ -1,13 +1,13 @@
 import { ErrorCode, ParkhiError } from "../error.ts";
 import type { Chapter } from "../parser.ts";
-import { decodeAscii, decodeUtf, decodeUtf8, decodeUtf16Be, parseU32 } from "../utils.ts";
+import { decodeAscii, decodeUtf, decodeUtf8, decodeUtf16Be, nonNull, parseU32 } from "../utils.ts";
 import { resynchronise } from "./syncBuffer.ts";
 
 export function parseSyncSafeSize(b3: number, b2: number, b1: number, b0: number): number {
-  const l3 = (b3! & 0x7f) << 21;
-  const l2 = (b2! & 0x7f) << 14;
-  const l1 = (b1! & 0x7f) << 7;
-  const l0 = (b0! & 0x7f) << 0;
+  const l3 = (b3 & 0x7f) << 21;
+  const l2 = (b2 & 0x7f) << 14;
+  const l1 = (b1 & 0x7f) << 7;
+  const l0 = (b0 & 0x7f) << 0;
   const size = (l3 | l2 | l1 | l0) >>> 0;
   return size;
 }
@@ -51,11 +51,11 @@ export function parseV23FrameHeader(data: Uint8Array): V23FrameHeader {
   if (data.length < 10) throwLengthMismatchError("frame", "header", 10, data.length);
 
   const id = decodeAscii(data.subarray(0, 4));
-  const size = parseU32(data[4]!, data[5]!, data[6]!, data[7]!);
-  const flags = data[9]!;
-  const hasCompression = (flags & 0b10000000) != 0;
-  const hasEncryption = (flags & 0b01000000) != 0;
-  const hasGroupingIdentity = (flags & 0b00100000) != 0;
+  const size = parseU32(nonNull(data[4]), nonNull(data[5]), nonNull(data[6]), nonNull(data[7]));
+  const flags = nonNull(data[9]);
+  const hasCompression = (flags & 0b10000000) !== 0;
+  const hasEncryption = (flags & 0b01000000) !== 0;
+  const hasGroupingIdentity = (flags & 0b00100000) !== 0;
 
   return {
     id,
@@ -99,13 +99,18 @@ export interface V24FrameHeader {
 
 export function parseV24FrameHeader(data: Uint8Array): V24FrameHeader {
   const id = decodeAscii(data.subarray(0, 4));
-  const size = parseSyncSafeSize(data[4]!, data[5]!, data[6]!, data[7]!);
-  const flags = data[9]!;
-  const hasGroupingIdentity = (flags & 0b01000000) != 0;
-  const hasCompression = (flags & 0b00001000) != 0;
-  const hasEncryption = (flags & 0b00000100) != 0;
-  const hasUnsynchronisation = (flags & 0b00000010) != 0;
-  const hasDataLengthIndicator = (flags & 0b00000001) != 0;
+  const size = parseSyncSafeSize(
+    nonNull(data[4]),
+    nonNull(data[5]),
+    nonNull(data[6]),
+    nonNull(data[7]),
+  );
+  const flags = nonNull(data[9]);
+  const hasGroupingIdentity = (flags & 0b01000000) !== 0;
+  const hasCompression = (flags & 0b00001000) !== 0;
+  const hasEncryption = (flags & 0b00000100) !== 0;
+  const hasUnsynchronisation = (flags & 0b00000010) !== 0;
+  const hasDataLengthIndicator = (flags & 0b00000001) !== 0;
 
   return {
     id,
@@ -168,33 +173,33 @@ enum PictureType {
 export function parseApic(data: Uint8Array): Blob | null {
   let cursor = 0;
 
-  const encoding = data[cursor]!;
+  const encoding = nonNull(data[cursor]);
   cursor = 1;
 
   const mimeTypeEnd = data.indexOf(0x00, cursor);
-  if (mimeTypeEnd == -1)
+  if (mimeTypeEnd === -1)
     throw new ParkhiError(ErrorCode.Corrupt, "APIC MIME type does not end with 0x00");
 
   const mimeTypeData = data.subarray(cursor, mimeTypeEnd);
   const mimeType = decodeAscii(mimeTypeData);
-  if (mimeType == "-->") return null;
+  if (mimeType === "-->") return null;
   cursor = mimeTypeEnd + 1;
 
-  const pictureType = data[cursor]!;
-  if (pictureType != PictureType.Cover) return null;
+  const pictureType = nonNull(data[cursor]);
+  if (pictureType !== PictureType.Cover) return null;
   cursor += 1;
 
-  if (encoding == TextEncoding.Iso8859 || encoding == TextEncoding.Utf8) {
+  if (encoding === TextEncoding.Iso8859 || encoding === TextEncoding.Utf8) {
     while (cursor < data.length - 1) {
-      if (data[cursor] == 0x00) {
+      if (data[cursor] === 0x00) {
         cursor += 1;
         break;
       }
       cursor += 1;
     }
-  } else if (encoding == TextEncoding.Utf16 || encoding == TextEncoding.Utf16Be) {
+  } else if (encoding === TextEncoding.Utf16 || encoding === TextEncoding.Utf16Be) {
     while (cursor < data.length - 1) {
-      if (data[cursor] == 0x00 && data[cursor + 1] == 0x00) {
+      if (data[cursor] === 0x00 && data[cursor + 1] === 0x00) {
         cursor += 2;
         break;
       }
@@ -223,7 +228,7 @@ export async function parseChap(version: "2.3" | "2.4", data: Uint8Array): Promi
   let cursor = 0;
 
   const idEnd = data.indexOf(0, cursor);
-  if (idEnd == -1) throw new ParkhiError(ErrorCode.Corrupt, "CHAP id does not end with 0x00");
+  if (idEnd === -1) throw new ParkhiError(ErrorCode.Corrupt, "CHAP id does not end with 0x00");
 
   const idData = data.subarray(cursor, idEnd);
   const id = decodeAscii(idData);
@@ -232,8 +237,8 @@ export async function parseChap(version: "2.3" | "2.4", data: Uint8Array): Promi
   if (data.length - cursor < 4)
     throwLengthMismatchError("CHAP", "data", `>= ${cursor + 4}`, data.length);
 
-  const [b3, b2, b1, b0] = data.subarray(cursor, cursor + 4);
-  const start = parseU32(b3!, b2!, b1!, b0!) / 1000;
+  const [b3 = 0, b2 = 0, b1 = 0, b0 = 0] = data.subarray(cursor, cursor + 4);
+  const start = parseU32(b3, b2, b1, b0) / 1000;
   cursor += 16;
 
   let name = "";
@@ -244,9 +249,9 @@ export async function parseChap(version: "2.3" | "2.4", data: Uint8Array): Promi
     const headerData = data.subarray(cursor, cursor + 10);
     cursor += 10;
 
-    let header;
-    if (version == "2.3") header = parseV23FrameHeader(headerData);
-    else if (version == "2.4") header = parseV24FrameHeader(headerData);
+    let header: V23FrameHeader | V24FrameHeader;
+    if (version === "2.3") header = parseV23FrameHeader(headerData);
+    else if (version === "2.4") header = parseV24FrameHeader(headerData);
     else throw new ParkhiError(ErrorCode.Internal, `unknown version ${version}`);
 
     if (data.length - cursor < header.size)
@@ -255,12 +260,12 @@ export async function parseChap(version: "2.3" | "2.4", data: Uint8Array): Promi
     const bodyData = data.subarray(cursor, cursor + header.size);
     cursor += header.size;
 
-    if (header.hasEncryption || header.id != FrameType.Tit2) continue;
+    if (header.hasEncryption || header.id !== FrameType.Tit2) continue;
 
-    let payload;
-    if (version == "2.3") {
+    let payload: Uint8Array;
+    if (version === "2.3") {
       payload = await parseV23FrameBody(header, bodyData);
-    } else if (version == "2.4") {
+    } else if (version === "2.4") {
       payload = await parseV24FrameBody(false, header as V24FrameHeader, bodyData);
     } else {
       throw new ParkhiError(ErrorCode.Internal, `unknown version ${version}`);
@@ -284,7 +289,7 @@ export async function parseCtoc(version: "2.3" | "2.4", data: Uint8Array): Promi
   let cursor = 0;
 
   const idEnd = data.indexOf(0, cursor);
-  if (idEnd == -1) throw new ParkhiError(ErrorCode.Corrupt, "CTOC id does not end with 0x00");
+  if (idEnd === -1) throw new ParkhiError(ErrorCode.Corrupt, "CTOC id does not end with 0x00");
 
   const idData = data.subarray(cursor, idEnd);
   const id = decodeAscii(idData);
@@ -293,17 +298,17 @@ export async function parseCtoc(version: "2.3" | "2.4", data: Uint8Array): Promi
   if (data.length - cursor < 2)
     throwLengthMismatchError("CTOC", "data", `>= ${cursor + 2}`, data.length);
 
-  const flags = data[cursor]!;
-  const root = (flags & 0b00000010) != 0;
+  const flags = nonNull(data[cursor]);
+  const root = (flags & 0b00000010) !== 0;
   cursor += 1;
 
-  const count = data[cursor]!;
+  const count = nonNull(data[cursor]);
   cursor += 1;
 
   const children = [];
   for (let i = 0; i < count; i++) {
     const idEnd = data.indexOf(0x00, cursor);
-    if (idEnd == -1)
+    if (idEnd === -1)
       throw new ParkhiError(ErrorCode.Corrupt, "CTOC child id does not end with 0x00");
 
     const idData = data.subarray(cursor, idEnd);
@@ -320,9 +325,9 @@ export async function parseCtoc(version: "2.3" | "2.4", data: Uint8Array): Promi
     const headerData = data.subarray(cursor, cursor + 10);
     cursor += 10;
 
-    let header;
-    if (version == "2.3") header = parseV23FrameHeader(headerData);
-    else if (version == "2.4") header = parseV24FrameHeader(headerData);
+    let header: V23FrameHeader | V24FrameHeader;
+    if (version === "2.3") header = parseV23FrameHeader(headerData);
+    else if (version === "2.4") header = parseV24FrameHeader(headerData);
     else throw new ParkhiError(ErrorCode.Internal, `unknown version ${version}`);
 
     if (data.length - cursor < header.size)
@@ -331,12 +336,12 @@ export async function parseCtoc(version: "2.3" | "2.4", data: Uint8Array): Promi
     const bodyData = data.subarray(cursor, cursor + header.size);
     cursor += header.size;
 
-    if (header.hasEncryption || header.id != FrameType.Tit2) continue;
+    if (header.hasEncryption || header.id !== FrameType.Tit2) continue;
 
-    let payload;
-    if (version == "2.3") {
+    let payload: Uint8Array;
+    if (version === "2.3") {
       payload = await parseV23FrameBody(header, bodyData);
-    } else if (version == "2.4") {
+    } else if (version === "2.4") {
       payload = await parseV24FrameBody(false, header as V24FrameHeader, bodyData);
     } else {
       throw new ParkhiError(ErrorCode.Internal, `unknown version ${version}`);
@@ -359,11 +364,11 @@ function resolveChapter(id: string, chaps: Map<string, Chap>, ctocs: Map<string,
   if (!ctoc) throw new ParkhiError(ErrorCode.Corrupt, `unresolved CHAP or CTOC id ${id}`);
 
   const children = ctoc.children.map((id) => resolveChapter(id, chaps, ctocs));
-  if (children.length == 0) throw new ParkhiError(ErrorCode.Corrupt, `CTOC ${id} has 0 children`);
+  if (children.length === 0) throw new ParkhiError(ErrorCode.Corrupt, `CTOC ${id} has 0 children`);
 
   return {
     name: ctoc.name,
-    position: children[0]!.position,
+    position: nonNull(children[0]).position,
     children,
   };
 }
@@ -380,13 +385,13 @@ export function parseChapters(chaps: Map<string, Chap>, ctocs: Map<string, Ctoc>
 }
 
 export function parseText(data: Uint8Array): string {
-  const encoding = data[0]!;
+  const encoding = nonNull(data[0]);
   const textData = data.subarray(1);
-  let text;
-  if (encoding == TextEncoding.Iso8859) text = decodeAscii(textData);
-  else if (encoding == TextEncoding.Utf16) text = decodeUtf(textData);
-  else if (encoding == TextEncoding.Utf16Be) text = decodeUtf16Be(textData);
-  else if (encoding == TextEncoding.Utf8) text = decodeUtf8(textData);
+  let text: string;
+  if (encoding === TextEncoding.Iso8859) text = decodeAscii(textData);
+  else if (encoding === TextEncoding.Utf16) text = decodeUtf(textData);
+  else if (encoding === TextEncoding.Utf16Be) text = decodeUtf16Be(textData);
+  else if (encoding === TextEncoding.Utf8) text = decodeUtf8(textData);
   else throw new ParkhiError(ErrorCode.Corrupt, `text frame has unknown encoding ${encoding}`);
   return text;
 }
@@ -397,9 +402,9 @@ export function parseTit2(data: Uint8Array): string {
 }
 
 export function splitText(version: "2.3" | "2.4", text: string): string[] {
-  let sep;
-  if (version == "2.3") sep = "/";
-  else if (version == "2.4") sep = "\x00";
+  let sep: string;
+  if (version === "2.3") sep = "/";
+  else if (version === "2.4") sep = "\x00";
   else throw new ParkhiError(ErrorCode.Internal, `unknown version ${version}`);
 
   return text.split(sep);

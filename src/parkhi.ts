@@ -3,7 +3,7 @@ import { Id3V23Parser } from "./id3V2/id3V23Parser.ts";
 import { Id3V24Parser } from "./id3V2/id3V24Parser.ts";
 import { useLogger } from "./logging.ts";
 import { MpegParser } from "./mpeg/mpegParser.ts";
-import { type Metadata, type Parser } from "./parser.ts";
+import type { Metadata, Parser } from "./parser.ts";
 
 const { debug } = useLogger("parkhi");
 
@@ -21,19 +21,19 @@ export class Parkhi {
   private done = false;
 
   constructor(parserType: ParserType = ParserType.All, customParsers: Parser[] = []) {
-    if ((parserType & ParserType.Id3V23) != 0) {
+    if ((parserType & ParserType.Id3V23) !== 0) {
       const parser = new Id3V23Parser();
       debug(`adding ${parser.name}`);
       this.parsers.add(parser);
     }
 
-    if ((parserType & ParserType.Id3V24) != 0) {
+    if ((parserType & ParserType.Id3V24) !== 0) {
       const parser = new Id3V24Parser();
       debug(`adding ${parser.name}`);
       this.parsers.add(parser);
     }
 
-    if ((parserType & ParserType.Mpeg) != 0) {
+    if ((parserType & ParserType.Mpeg) !== 0) {
       const parser = new MpegParser();
       debug(`adding ${parser.name}`);
       this.parsers.add(parser);
@@ -51,12 +51,12 @@ export class Parkhi {
     const toDrop = [];
 
     for (const parser of this.parsers) {
-      let done;
+      let done: boolean = false;
       try {
         done = await parser.feed(chunk);
       } catch (e) {
         if (e instanceof ParkhiError) {
-          if (e.code == ErrorCode.Unknown) {
+          if (e.code === ErrorCode.Unknown) {
             debug(`${parser.name} says unknown: ${e.message}`);
             toDrop.push(parser);
           } else {
@@ -77,7 +77,7 @@ export class Parkhi {
     }
 
     for (const parser of toDrop) this.parsers.delete(parser);
-    if (this.parsers.size == 0)
+    if (this.parsers.size === 0)
       throw new ParkhiError(ErrorCode.Unknown, "no parser is able to parse the data");
 
     return false;

@@ -1,6 +1,6 @@
-import { SyncBuffer, resynchronise } from "../../src/id3V2/syncBuffer.ts";
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
+import { resynchronise, SyncBuffer } from "../../src/id3V2/syncBuffer.ts";
 
 describe("resynchronise", () => {
   it("should return identical data when no 0xff is present", () => {

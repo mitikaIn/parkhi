@@ -1,3 +1,5 @@
+import { strict as assert } from "node:assert";
+import { describe, it } from "node:test";
 import { ErrorCode, ParkhiError } from "../../src/error.ts";
 import {
   parseBoxes,
@@ -20,8 +22,6 @@ import {
 } from "../../src/mpeg/boxes.ts";
 import { concat, encodeAscii } from "../utils.ts";
 import { makeBox } from "./utils.ts";
-import { strict as assert } from "node:assert";
-import { describe, it } from "node:test";
 
 describe("parseBoxes", () => {
   it("should parse data with one box", () => {
@@ -29,8 +29,8 @@ describe("parseBoxes", () => {
     const boxes = parseBoxes(data);
 
     assert.equal(boxes.length, 1);
-    assert.equal(boxes[0]!.type, "abcd");
-    assert.deepEqual(boxes[0]!.data, new Uint8Array(16));
+    assert.equal(boxes[0]?.type, "abcd");
+    assert.deepEqual(boxes[0]?.data, new Uint8Array(16));
   });
 
   it("should parse data with multiple boxes", () => {
@@ -41,12 +41,12 @@ describe("parseBoxes", () => {
     const boxes = parseBoxes(data);
 
     assert.equal(boxes.length, 3);
-    assert.equal(boxes[0]!.type, "abcd");
-    assert.deepEqual(boxes[0]!.data, new Uint8Array(16));
-    assert.equal(boxes[1]!.type, "efgh");
-    assert.deepEqual(boxes[1]!.data, new Uint8Array(32));
-    assert.equal(boxes[2]!.type, "ijkl");
-    assert.deepEqual(boxes[2]!.data, new Uint8Array(64));
+    assert.equal(boxes[0]?.type, "abcd");
+    assert.deepEqual(boxes[0]?.data, new Uint8Array(16));
+    assert.equal(boxes[1]?.type, "efgh");
+    assert.deepEqual(boxes[1]?.data, new Uint8Array(32));
+    assert.equal(boxes[2]?.type, "ijkl");
+    assert.deepEqual(boxes[2]?.data, new Uint8Array(64));
   });
 
   it("should parse data with nested boxes", () => {
@@ -61,12 +61,12 @@ describe("parseBoxes", () => {
     const boxes = parseBoxes(data);
 
     assert.equal(boxes.length, 3);
-    assert.equal(boxes[0]!.type, "abcd");
-    assert.deepEqual(boxes[0]!.data, new Uint8Array(16));
-    assert.equal(boxes[1]!.type, "efgh");
-    assert.deepEqual(boxes[1]!.data, concat(subBox0, subBox1));
-    assert.equal(boxes[2]!.type, "ijkl");
-    assert.deepEqual(boxes[2]!.data, concat(subBox2, subBox3));
+    assert.equal(boxes[0]?.type, "abcd");
+    assert.deepEqual(boxes[0]?.data, new Uint8Array(16));
+    assert.equal(boxes[1]?.type, "efgh");
+    assert.deepEqual(boxes[1]?.data, concat(subBox0, subBox1));
+    assert.equal(boxes[2]?.type, "ijkl");
+    assert.deepEqual(boxes[2]?.data, concat(subBox2, subBox3));
   });
 
   it("should parse box with size field 0", () => {
@@ -76,12 +76,12 @@ describe("parseBoxes", () => {
     const data = concat(box0, box1, box2);
     const boxes = parseBoxes(data);
 
-    assert.equal(boxes[0]!.type, "abcd");
-    assert.deepEqual(boxes[0]!.data, new Uint8Array(16));
-    assert.equal(boxes[1]!.type, "efgh");
-    assert.deepEqual(boxes[1]!.data, new Uint8Array(32));
-    assert.equal(boxes[2]!.type, "ijkl");
-    assert.deepEqual(boxes[2]!.data, new Uint8Array(64));
+    assert.equal(boxes[0]?.type, "abcd");
+    assert.deepEqual(boxes[0]?.data, new Uint8Array(16));
+    assert.equal(boxes[1]?.type, "efgh");
+    assert.deepEqual(boxes[1]?.data, new Uint8Array(32));
+    assert.equal(boxes[2]?.type, "ijkl");
+    assert.deepEqual(boxes[2]?.data, new Uint8Array(64));
   });
 
   it("should fail for box with extended size", () => {
@@ -108,7 +108,7 @@ describe("parseFtyp", () => {
 
 describe("parseStsc", () => {
   it("should parse data", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const data = new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version and flags.
       0x00, 0x00, 0x00, 0x04, // Entry count: 4.
@@ -134,7 +134,7 @@ describe("parseStsc", () => {
 
 describe("parseStco", () => {
   it("should parse data", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const data = new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version and flags.
       0x00, 0x00, 0x00, 0x0f, // Entry count: 15.
@@ -165,7 +165,7 @@ describe("parseStco", () => {
 
 describe("parseStz2", () => {
   it("should parse data with field size 4", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const data = new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version and flags.
       0x00, 0x00, 0x00, 0x04, // Reserved and field size.
@@ -179,7 +179,7 @@ describe("parseStz2", () => {
   });
 
   it("should parse data with field size 8", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const data = new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version and flags.
       0x00, 0x00, 0x00, 0x08, // Reserved and field size.
@@ -195,7 +195,7 @@ describe("parseStz2", () => {
   });
 
   it("should parse data with field size 16", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const data = new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version and flags.
       0x00, 0x00, 0x00, 0x10, // Reserved and field size.
@@ -213,7 +213,7 @@ describe("parseStz2", () => {
 
 describe("parseStsz", () => {
   it("should parse data", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const data =  new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version and flags.
       0x00, 0x00, 0x00, 0x00, // Sample size: variable.
@@ -231,7 +231,7 @@ describe("parseStsz", () => {
 
 describe("parseStts", () => {
   it("should parse data", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const data = new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version and flags.
       0x00, 0x00, 0x00, 0x02, // Entry count: 2.
@@ -249,7 +249,7 @@ describe("parseStts", () => {
 
 describe("parseMinf", () => {
   it("should parse data", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const stts = makeBox("stts", new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x03, // 3 entries.
@@ -258,7 +258,7 @@ describe("parseMinf", () => {
       0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0xf4  // 1 sample, duration 500.
     ]));
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const stsz = makeBox("stsz", new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x00, // Global size: variable.
@@ -268,7 +268,7 @@ describe("parseMinf", () => {
       0x00, 0x00, 0x00, 0x08  // Chapter 3: 8 bytes.
     ]));
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const stsc = makeBox("stsc", new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version 0 anf flags.
       0x00, 0x00, 0x00, 0x01, // 1 entry in the table.
@@ -277,7 +277,7 @@ describe("parseMinf", () => {
       0x00, 0x00, 0x00, 0x01, // Sample description index.
     ]));
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const stco = makeBox("stco", new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x03, // 3 offsets.
@@ -312,7 +312,7 @@ describe("parseMinf", () => {
 
 describe("parseMdhd", () => {
   it("should parse data with version 0", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const data = new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x00,
@@ -327,7 +327,7 @@ describe("parseMdhd", () => {
   });
 
   it("should parse data with version 1", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const data = new Uint8Array([
       0x01, 0x00, 0x00, 0x00, // Version 1 and flags.
       0x00, 0x00, 0x00, 0x00, 
@@ -347,7 +347,7 @@ describe("parseMdhd", () => {
 
 describe("parseMdia", () => {
   it("should parse data", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const mdhd = makeBox("mdhd", new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x00,
@@ -357,7 +357,7 @@ describe("parseMdia", () => {
       0x00, 0x00, 0x00, 0x00
     ]));
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const stts = makeBox("stts", new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x03, // 3 entries.
@@ -366,7 +366,7 @@ describe("parseMdia", () => {
       0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0xf4  // 1 sample, duration 500.
     ]));
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const stsz = makeBox("stsz", new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x00, // Global size: variable.
@@ -376,7 +376,7 @@ describe("parseMdia", () => {
       0x00, 0x00, 0x00, 0x08  // Chapter 3: 8 bytes.
     ]));
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const stsc = makeBox("stsc", new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version 0 anf flags.
       0x00, 0x00, 0x00, 0x01, // 1 entry in the table.
@@ -385,7 +385,7 @@ describe("parseMdia", () => {
       0x00, 0x00, 0x00, 0x01, // Sample description index.
     ]));
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const stco = makeBox("stco", new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x03, // 3 offsets.
@@ -421,7 +421,7 @@ describe("parseMdia", () => {
 
 describe("parseItem", () => {
   it("should parse data", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const data = makeBox("data", new Uint8Array([
       0x00, 0x00, 0x00, 0x01, // Type: UTF-8.
       0x00, 0x00, 0x00, 0x00, // Locale: default.
@@ -436,7 +436,7 @@ describe("parseItem", () => {
 
 describe("parseUdta", () => {
   it("should parse data", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const nameData = makeBox("data", new Uint8Array([
       0x00, 0x00, 0x00, 0x01, // Type: UTF-8.
       0x00, 0x00, 0x00, 0x00, // Locale: default.
@@ -444,7 +444,7 @@ describe("parseUdta", () => {
     ]));
     const nameBox = makeBox("©nam", nameData);
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const authorData = makeBox("data", new Uint8Array([
       0x00, 0x00, 0x00, 0x01, // Type: UTF-8.
       0x00, 0x00, 0x00, 0x00, // Locale: default.
@@ -452,7 +452,7 @@ describe("parseUdta", () => {
     ]));
     const authorBox = makeBox("©ART", authorData);
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const coverData = makeBox("data", new Uint8Array([
       0x00, 0x00, 0x00, 0x0e, // Type: PNG.
       0x00, 0x00, 0x00, 0x00, // Locale: default.
@@ -475,7 +475,7 @@ describe("parseUdta", () => {
 
 describe("parseTref", () => {
   it("should parse data", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const data = makeBox("chap", new Uint8Array([
       0x00, 0x00, 0x00, 0x02, // Track ID: 2
     ]));
@@ -487,7 +487,7 @@ describe("parseTref", () => {
 
 describe("parseTkhd", () => {
   it("should parse data with version 0", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const data = new Uint8Array([
       0x00, 0x00, 0x00, 0x01, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x00, 
@@ -500,7 +500,7 @@ describe("parseTkhd", () => {
   });
 
   it("should parse data with version 1", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const data = new Uint8Array([
       0x01, 0x00, 0x00, 0x01, // Version 1 and flags.
       0x00, 0x00, 0x00, 0x00, 
@@ -517,14 +517,14 @@ describe("parseTkhd", () => {
 
 describe("parseTrak", () => {
   it("should parse data", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const tkhd = makeBox("tkhd", new Uint8Array([
       0x00, 0x00, 0x00, 0x01, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x00, 
       0x00, 0x00, 0x00, 0x00, 
       0x00, 0x00, 0x00, 0x01,  // Track ID: 1
     ]));
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const trefData = makeBox("chap", new Uint8Array([
       0x00, 0x00, 0x00, 0x02, // Track ID: 2
     ]));
@@ -543,7 +543,7 @@ describe("parseTrak", () => {
 
 describe("parseMoov", () => {
   it("should parse data", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const tkhd1 = makeBox("tkhd", new Uint8Array([
       0x00, 0x00, 0x00, 0x01, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x00, 
@@ -551,7 +551,7 @@ describe("parseMoov", () => {
       0x00, 0x00, 0x00, 0x01,  // Track ID: 1
     ]));
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const trefData = makeBox("chap", new Uint8Array([
       0x00, 0x00, 0x00, 0x02, // Track ID: 2
     ]));
@@ -560,7 +560,7 @@ describe("parseMoov", () => {
     const mdia1 = makeBox("mdia", new Uint8Array([0x00, 0x01, 0x02]));
     const trak1 = makeBox("trak", tkhd1, tref, mdia1);
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const tkhd2 = makeBox("tkhd", new Uint8Array([
       0x00, 0x00, 0x00, 0x01, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x00, 
@@ -568,7 +568,7 @@ describe("parseMoov", () => {
       0x00, 0x00, 0x00, 0x02,  // Track ID: 2
     ]));
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const mdhd = makeBox("mdhd", new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x00,
@@ -578,7 +578,7 @@ describe("parseMoov", () => {
       0x00, 0x00, 0x00, 0x00
     ]));
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const stts = makeBox("stts", new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x03, // 3 entries.
@@ -587,7 +587,7 @@ describe("parseMoov", () => {
       0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0xf4  // 1 sample, duration 500.
     ]));
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const stsz = makeBox("stsz", new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x00, // Global size: variable.
@@ -597,7 +597,7 @@ describe("parseMoov", () => {
       0x00, 0x00, 0x00, 0x08  // Chapter 3: 8 bytes.
     ]));
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const stsc = makeBox("stsc", new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version 0 anf flags.
       0x00, 0x00, 0x00, 0x01, // 1 entry in the table.
@@ -606,7 +606,7 @@ describe("parseMoov", () => {
       0x00, 0x00, 0x00, 0x01, // Sample description index.
     ]));
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const stco = makeBox("stco", new Uint8Array([
       0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
       0x00, 0x00, 0x00, 0x03, // 3 offsets.
@@ -621,7 +621,7 @@ describe("parseMoov", () => {
 
     const trak2 = makeBox("trak", tkhd2, mdia2);
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const nameData = makeBox("data", new Uint8Array([
       0x00, 0x00, 0x00, 0x01, // Type: UTF-8.
       0x00, 0x00, 0x00, 0x00, // Locale: default.
@@ -629,7 +629,7 @@ describe("parseMoov", () => {
     ]));
     const nameBox = makeBox("©nam", nameData);
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const authorData = makeBox("data", new Uint8Array([
       0x00, 0x00, 0x00, 0x01, // Type: UTF-8.
       0x00, 0x00, 0x00, 0x00, // Locale: default.
@@ -637,7 +637,7 @@ describe("parseMoov", () => {
     ]));
     const authorBox = makeBox("©ART", authorData);
 
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const coverData = makeBox("data", new Uint8Array([
       0x00, 0x00, 0x00, 0x0e, // Type: PNG.
       0x00, 0x00, 0x00, 0x00, // Locale: default.
@@ -669,10 +669,10 @@ describe("parseMoov", () => {
         position: 0x0f,
       },
     ]);
-    assert.deepEqual(moov.udta!.authors, ["John"]);
-    assert.equal(moov.udta!.name, "Book");
+    assert.deepEqual(moov.udta?.authors, ["John"]);
+    assert.equal(moov.udta?.name, "Book");
     assert.deepEqual(
-      moov.udta!.cover,
+      moov.udta?.cover,
       new Blob([new Uint8Array([0x89, 0x50, 0x43, 0x47])], { type: "image/png" }),
     );
   });
@@ -680,7 +680,7 @@ describe("parseMoov", () => {
 
 describe("parseChapName", () => {
   it("should parse data with UTF-8", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const data = new Uint8Array([
       0x00, 0x03, // Length: 3
       0x46, 0x6f, 0x6f, // "Foo"
@@ -691,7 +691,7 @@ describe("parseChapName", () => {
   });
 
   it("should parse data with UTF-16", () => {
-    // prettier-ignore
+    // biome-ignore format: formatted as per layout.
     const data = new Uint8Array([
       0x00, 0x08, // Length: 8
       0xfe, 0xff, 0x00, 0x42, 0x00, 0x61, 0x00, 0x72, // "Bar"

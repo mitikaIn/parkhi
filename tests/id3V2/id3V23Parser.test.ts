@@ -1,8 +1,8 @@
+import { strict as assert } from "node:assert";
+import { describe, it } from "node:test";
 import { Id3V23Parser } from "../../src/id3V2/id3V23Parser.ts";
 import { concat, encodeAscii, encodeU32, iterateBytes } from "../utils.ts";
 import { makeV23Frame, makeV23Tag } from "./utils.ts";
-import { strict as assert } from "node:assert";
-import { describe, it } from "node:test";
 
 const titleFrame = await makeV23Frame("TIT2", encodeAscii("\x00Book"));
 

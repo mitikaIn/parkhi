@@ -1,4 +1,5 @@
 import { ErrorCode, ParkhiError } from "./error.ts";
+import { nonNull } from "./utils.ts";
 
 export class Buffer {
   private chunks: Uint8Array[] = [];
@@ -18,7 +19,7 @@ export class Buffer {
   }
 
   get done() {
-    return this.readLength == this.maxLength;
+    return this.readLength === this.maxLength;
   }
 
   get rejected() {
@@ -26,13 +27,13 @@ export class Buffer {
   }
 
   push(chunk: Uint8Array) {
-    if (chunk.length == 0) return;
+    if (chunk.length === 0) return;
     if (this.done) return;
 
     const readableLength = Math.min(this.maxLength - this.readLength, chunk.length);
     const rejected = chunk.subarray(readableLength);
     chunk = chunk.subarray(0, readableLength);
-    if (rejected.length != 0) this.rejectedChunks.push(rejected);
+    if (rejected.length !== 0) this.rejectedChunks.push(rejected);
 
     this.chunks.push(chunk);
     this.len += chunk.length;
@@ -44,7 +45,8 @@ export class Buffer {
       throw new ParkhiError(ErrorCode.Internal, `idx (${idx}) exceeds length (${this.len})`);
 
     for (const chunk of this.chunks) {
-      if (idx < chunk.length) return chunk[idx]!;
+      if (idx < chunk.length) return nonNull(chunk[idx]);
+
       idx -= chunk.length;
     }
 
@@ -57,27 +59,27 @@ export class Buffer {
     if (end > this.len)
       throw new ParkhiError(ErrorCode.Internal, `end (${end}) exceeds length (${this.len})`);
 
-    if (this.chunks.length == 0) return new Uint8Array(0);
+    if (this.chunks.length === 0) return new Uint8Array(0);
 
     const size = end - begin;
     const chunks = [];
     let remaining = size;
 
-    let chunkIdx;
+    let chunkIdx: number;
     for (chunkIdx = 0; chunkIdx < this.chunks.length; chunkIdx++) {
-      const chunk = this.chunks[chunkIdx]!;
+      const chunk = nonNull(this.chunks[chunkIdx]);
       if (chunk.length > begin) break;
       begin -= chunk.length;
     }
 
-    const chunk = this.chunks[chunkIdx]!;
+    const chunk = nonNull(this.chunks[chunkIdx]);
     const subChunk = chunk.subarray(begin, begin + Math.min(remaining, chunk.length));
     chunks.push(subChunk);
     remaining -= subChunk.length;
     chunkIdx += 1;
 
-    while (remaining != 0) {
-      const chunk = this.chunks[chunkIdx]!;
+    while (remaining !== 0) {
+      const chunk = nonNull(this.chunks[chunkIdx]);
       const subChunk = chunk.subarray(0, Math.min(remaining, chunk.length));
       chunks.push(subChunk);
       remaining -= subChunk.length;
@@ -101,8 +103,8 @@ export class Buffer {
     const chunks = [];
     let remaining = size;
 
-    while (remaining != 0) {
-      const chunk = this.chunks[0]!;
+    while (remaining !== 0) {
+      const chunk = nonNull(this.chunks[0]);
 
       if (remaining < chunk.length) {
         const left = chunk.subarray(0, remaining);

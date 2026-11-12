@@ -1,3 +1,5 @@
+import { strict as assert } from "node:assert";
+import { describe, it } from "node:test";
 import {
   decodeAscii,
   decodeUtf,
@@ -6,8 +8,6 @@ import {
   decodeUtf16Le,
   parseU32,
 } from "../src/utils.ts";
-import { strict as assert } from "node:assert";
-import { describe, it } from "node:test";
 
 describe("parseU32", () => {
   it("should parse data", () => {

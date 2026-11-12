@@ -1,6 +1,6 @@
-import { Buffer } from "../src/buffer.ts";
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
+import { Buffer } from "../src/buffer.ts";
 
 describe("Buffer", () => {
   it("should be empty on construction", () => {

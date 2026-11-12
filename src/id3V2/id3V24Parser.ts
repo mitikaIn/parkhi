@@ -2,12 +2,12 @@ import { Buffer } from "../buffer.ts";
 import { ErrorCode, ParkhiError } from "../error.ts";
 import { useLogger } from "../logging.ts";
 import { MetadataType } from "../metadataType.ts";
-import { type Metadata, type Parser } from "../parser.ts";
+import type { Metadata, Parser } from "../parser.ts";
+import { nonNull } from "../utils.ts";
 import {
   type Chap,
   type Ctoc,
   FrameType,
-  type V24FrameHeader,
   parseApic,
   parseChap,
   parseChapters,
@@ -18,6 +18,7 @@ import {
   parseV24FrameBody,
   parseV24FrameHeader,
   throwLengthMismatchError,
+  type V24FrameHeader,
 } from "./frames.ts";
 
 const { debug } = useLogger("id3V24Parser");
@@ -63,27 +64,27 @@ export class Id3V24Parser implements Parser {
 
   private async parseTag(): Promise<boolean> {
     const i = this.data.indexOf(0x49, this.cursor);
-    if (i == -1) return true;
-    if (!(this.data[i + 1] == 0x44 && this.data[i + 2] == 0x33)) return true;
+    if (i === -1) return true;
+    if (!(this.data[i + 1] === 0x44 && this.data[i + 2] === 0x33)) return true;
     debug("identified data to be ID3");
     this.cursor = i + 3;
 
     if (this.data.length - this.cursor < 7)
       throwLengthMismatchError("header", "data", 7, this.data.length - this.cursor);
 
-    if (!(this.data[this.cursor] == 4 && this.data[this.cursor + 1] == 0))
+    if (!(this.data[this.cursor] === 4 && this.data[this.cursor + 1] === 0))
       throw new ParkhiError(ErrorCode.Unknown, "version is not 40");
     debug("identified data to be version 2.40");
     this.cursor += 2;
 
-    const flags = this.data[this.cursor]!;
-    const hasUnsynchronisation = (flags & 0b10000000) != 0;
-    const hasExtendedHeader = (flags & 0b01000000) != 0;
-    const hasFooter = (flags & 0b00010000) != 0;
+    const flags = nonNull(this.data[this.cursor]);
+    const hasUnsynchronisation = (flags & 0b10000000) !== 0;
+    const hasExtendedHeader = (flags & 0b01000000) !== 0;
+    const hasFooter = (flags & 0b00010000) !== 0;
     this.cursor += 1;
 
-    const [b3, b2, b1, b0] = this.data.subarray(this.cursor, this.cursor + 4);
-    const size = parseSyncSafeSize(b3!, b2!, b1!, b0!);
+    const [b3 = 0, b2 = 0, b1 = 0, b0 = 0] = this.data.subarray(this.cursor, this.cursor + 4);
+    const size = parseSyncSafeSize(b3, b2, b1, b0);
     this.cursor += 4;
 
     const fullSize = size + (hasFooter ? 10 : 0);
@@ -93,10 +94,10 @@ export class Id3V24Parser implements Parser {
     let extendedHeaderSize = 0;
     let isUpdate = false;
     if (hasExtendedHeader) {
-      const [b3, b2, b1, b0] = this.data.subarray(this.cursor, this.cursor + 4);
-      extendedHeaderSize = parseSyncSafeSize(b3!, b2!, b1!, b0!);
-      const flags = this.data[this.cursor + 5]!;
-      isUpdate = (flags & 0b01000000) != 0;
+      const [b3 = 0, b2 = 0, b1 = 0, b0 = 0] = this.data.subarray(this.cursor, this.cursor + 4);
+      extendedHeaderSize = parseSyncSafeSize(b3, b2, b1, b0);
+      const flags = nonNull(this.data[this.cursor + 5]);
+      isUpdate = (flags & 0b01000000) !== 0;
     }
 
     const tagEnd = this.cursor + extendedHeaderSize + size;
@@ -113,7 +114,7 @@ export class Id3V24Parser implements Parser {
   }
 
   private async parseFrame(hasUnsynchronisation: boolean, isUpdate: boolean): Promise<boolean> {
-    if (this.data[this.cursor] == 0x00) {
+    if (this.data[this.cursor] === 0x00) {
       debug("found padding, finishing parsing of tag");
       return true;
     }
@@ -150,34 +151,34 @@ export class Id3V24Parser implements Parser {
 
     const id = frameHeader.id;
 
-    if (id == FrameType.Apic) {
+    if (id === FrameType.Apic) {
       if (!isUpdate && this.metadata.cover) return;
       this.metadata.cover = parseApic(data);
       return;
     }
 
-    if (id == FrameType.Chap) {
+    if (id === FrameType.Chap) {
       const chap = await parseChap("2.4", data);
       this.chaps.set(chap.id, chap);
       return;
     }
 
-    if (id == FrameType.Ctoc) {
+    if (id === FrameType.Ctoc) {
       const ctoc = await parseCtoc("2.4", data);
       this.ctocs.set(ctoc.id, ctoc);
       return;
     }
 
-    if (id == FrameType.Tit2) {
-      if (!isUpdate && this.metadata.name) return;
+    if (id === FrameType.Tit2) {
+      if (!isUpdate && this.metadata.name != null) return;
       this.metadata.name = parseTit2(data);
     }
 
     if (
-      id == FrameType.Tpe1 ||
-      id == FrameType.Tpe2 ||
-      id == FrameType.Tpe3 ||
-      id == FrameType.Tpe4
+      id === FrameType.Tpe1 ||
+      id === FrameType.Tpe2 ||
+      id === FrameType.Tpe3 ||
+      id === FrameType.Tpe4
     ) {
       const authors = parseTpex("2.4", data);
       this.metadata.authors.push(...authors);

@@ -1,13 +1,13 @@
+import { strict as assert } from "node:assert";
+import { describe, it } from "node:test";
 import { MpegParser } from "../../src/mpeg/mpegParser.ts";
 import { concat, encodeAscii, iterateBytes } from "../utils.ts";
 import { makeBox } from "./utils.ts";
-import { strict as assert } from "node:assert";
-import { describe, it } from "node:test";
 
 const ftypData = concat(encodeAscii("M4A "), [0x00, 0x00, 0x00, 0x00], encodeAscii("isom"));
 const ftyp = makeBox("ftyp", ftypData);
 
-// prettier-ignore
+// biome-ignore format: formatted as per layout.
 const tkhd1 = makeBox("tkhd", new Uint8Array([
   0x00, 0x00, 0x00, 0x01, // Version 0 and flags.
   0x00, 0x00, 0x00, 0x00, 
@@ -15,7 +15,7 @@ const tkhd1 = makeBox("tkhd", new Uint8Array([
   0x00, 0x00, 0x00, 0x01,  // Track ID: 1
 ]));
 
-// prettier-ignore
+// biome-ignore format: formatted as per layout.
 const trefData = makeBox("chap", new Uint8Array([
   0x00, 0x00, 0x00, 0x02, // Track ID: 2
 ]));
@@ -24,7 +24,7 @@ const tref = makeBox("tref", trefData);
 const mdia1 = makeBox("mdia", new Uint8Array([0x00, 0x01, 0x02]));
 const trak1 = makeBox("trak", tkhd1, tref, mdia1);
 
-// prettier-ignore
+// biome-ignore format: formatted as per layout.
 const tkhd2 = makeBox("tkhd", new Uint8Array([
   0x00, 0x00, 0x00, 0x01, // Version 0 and flags.
   0x00, 0x00, 0x00, 0x00, 
@@ -32,7 +32,7 @@ const tkhd2 = makeBox("tkhd", new Uint8Array([
   0x00, 0x00, 0x00, 0x02,  // Track ID: 2
 ]));
 
-// prettier-ignore
+// biome-ignore format: formatted as per layout.
 const mdhd = makeBox("mdhd", new Uint8Array([
   0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
   0x00, 0x00, 0x00, 0x00,
@@ -42,7 +42,7 @@ const mdhd = makeBox("mdhd", new Uint8Array([
   0x00, 0x00, 0x00, 0x00
 ]));
 
-// prettier-ignore
+// biome-ignore format: formatted as per layout.
 const stts = makeBox("stts", new Uint8Array([
   0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
   0x00, 0x00, 0x00, 0x03, // 3 entries.
@@ -51,7 +51,7 @@ const stts = makeBox("stts", new Uint8Array([
   0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0xf4  // 1 sample, duration 500.
 ]));
 
-// prettier-ignore
+// biome-ignore format: formatted as per layout.
 const stsz = makeBox("stsz", new Uint8Array([
   0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
   0x00, 0x00, 0x00, 0x00, // Global size: variable.
@@ -61,7 +61,7 @@ const stsz = makeBox("stsz", new Uint8Array([
   0x00, 0x00, 0x00, 0x0a  // Chapter 3: 10 bytes.
 ]));
 
-// prettier-ignore
+// biome-ignore format: formatted as per layout.
 const stsc = makeBox("stsc", new Uint8Array([
   0x00, 0x00, 0x00, 0x00, // Version 0 anf flags.
   0x00, 0x00, 0x00, 0x01, // 1 entry in the table.
@@ -70,7 +70,7 @@ const stsc = makeBox("stsc", new Uint8Array([
   0x00, 0x00, 0x00, 0x01, // Sample description index.
 ]));
 
-// prettier-ignore
+// biome-ignore format: formatted as per layout.
 const stco = makeBox("stco", new Uint8Array([
   0x00, 0x00, 0x00, 0x00, // Version 0 and flags.
   0x00, 0x00, 0x00, 0x03, // 3 offsets.
@@ -85,7 +85,7 @@ const mdia2 = makeBox("mdia", mdhd, minf);
 
 const trak2 = makeBox("trak", tkhd2, mdia2);
 
-// prettier-ignore
+// biome-ignore format: formatted as per layout.
 const nameData = makeBox("data", new Uint8Array([
   0x00, 0x00, 0x00, 0x01, // Type: UTF-8.
   0x00, 0x00, 0x00, 0x00, // Locale: default.
@@ -93,7 +93,7 @@ const nameData = makeBox("data", new Uint8Array([
 ]));
 const nameBox = makeBox("©nam", nameData);
 
-// prettier-ignore
+// biome-ignore format: formatted as per layout.
 const authorData = makeBox("data", new Uint8Array([
   0x00, 0x00, 0x00, 0x01, // Type: UTF-8.
   0x00, 0x00, 0x00, 0x00, // Locale: default.
@@ -101,7 +101,7 @@ const authorData = makeBox("data", new Uint8Array([
 ]));
 const authorBox = makeBox("©ART", authorData);
 
-// prettier-ignore
+// biome-ignore format: formatted as per layout.
 const coverData = makeBox("data", new Uint8Array([
   0x00, 0x00, 0x00, 0x0e, // Type: PNG.
   0x00, 0x00, 0x00, 0x00, // Locale: default.

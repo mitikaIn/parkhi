@@ -1,3 +1,5 @@
+import { ErrorCode, ParkhiError } from "./error.ts";
+
 export function parseU32(b3: number, b2: number, b1: number, b0: number): number {
   const l3 = b3 << 24;
   const l2 = b2 << 16;
@@ -29,8 +31,21 @@ export function decodeUtf16Le(data: Uint8Array): string {
 }
 
 export function decodeUtf(data: Uint8Array): string {
-  if (data[0] == 0xfe && data[1] == 0xff) return UTF_16_BE.decode(data);
-  if (data[0] == 0xff && data[1] == 0xfe) return UTF_16_LE.decode(data);
-  if (data[0] == 0xef && data[1] == 0xbb && data[2] == 0xbf) return UTF_8.decode(data);
+  if (data[0] === 0xfe && data[1] === 0xff) return UTF_16_BE.decode(data);
+  if (data[0] === 0xff && data[1] === 0xfe) return UTF_16_LE.decode(data);
+  if (data[0] === 0xef && data[1] === 0xbb && data[2] === 0xbf) return UTF_8.decode(data);
   return UTF_8.decode(data);
+}
+
+export function nonNull<T>(value: T): NonNullable<T> {
+  if (value === null || value === undefined) {
+    throw new ParkhiError(ErrorCode.Internal, "unexpected null or undefined");
+  }
+  return value as NonNullable<T>;
+}
+
+export function assertNonNull<T>(value: T): asserts value is NonNullable<T> {
+  if (value === null || value === undefined) {
+    throw new ParkhiError(ErrorCode.Internal, "unexpected null or undefined");
+  }
 }

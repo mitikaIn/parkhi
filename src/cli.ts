@@ -1,10 +1,10 @@
+import { createReadStream } from "node:fs";
+import { argv, argv0 } from "node:process";
+import { type InspectColor, styleText } from "node:util";
 import { ErrorCode, ParkhiError } from "./error.ts";
 import { Level, setHandler, useLogger } from "./logging.ts";
 import { Parkhi, ParserType } from "./parkhi.ts";
 import type { Chapter, Metadata } from "./parser.ts";
-import { createReadStream } from "node:fs";
-import { argv, argv0 } from "node:process";
-import { type InspectColor, styleText } from "node:util";
 
 const { error } = useLogger("parkhi");
 
@@ -15,8 +15,9 @@ function bold(text: string): string {
 function printChapter(level: number, i: number, chapter: Chapter) {
   const padding = " ".repeat(level);
   console.log(`${padding}${i}. ${bold(chapter.name)}`, `(${Math.round(chapter.position)}s)`);
-
-  chapter.children.forEach((subChapter, i) => printChapter(level + 1, i + 1, subChapter));
+  for (const [i, subChapter] of chapter.children.entries()) {
+    printChapter(level + 1, i + 1, subChapter);
+  }
 }
 
 async function printMetadata(metadata: Metadata | null) {
@@ -25,7 +26,7 @@ async function printMetadata(metadata: Metadata | null) {
   let cover = null;
   if (metadata.cover) {
     cover =
-      `${metadata.cover.type.length != 0 ? metadata.cover.type : "unknown"} ` +
+      `${metadata.cover.type.length !== 0 ? metadata.cover.type : "unknown"} ` +
       `(${metadata.cover.size} bytes)`;
   }
 
@@ -35,10 +36,12 @@ async function printMetadata(metadata: Metadata | null) {
   console.log(bold("Authors"), " :", metadata.authors.join(", "));
   console.log(bold("Cover"), "   :", cover);
 
-  if (metadata.chapters.length == 0) return;
+  if (metadata.chapters.length === 0) return;
 
   console.log(bold("Chapters"), ":");
-  metadata.chapters.forEach((chapter, i) => printChapter(0, i + 1, chapter));
+  for (const [i, chapter] of metadata.chapters.entries()) {
+    printChapter(0, i + 1, chapter);
+  }
 }
 
 async function main(path: string) {
@@ -63,10 +66,10 @@ function format(color: InspectColor, level: string, component: string, message: 
 }
 
 function consoleLogger(level: Level, component: string, message: string) {
-  if (level == Level.Debug) console.debug(format("cyan", "DEBUG", component, message));
-  else if (level == Level.Info) console.info(format("blue", "INFO", component, message));
-  else if (level == Level.Warn) console.warn(format("yellow", "WARN", component, message));
-  else if (level == Level.Error) console.error(format("red", "ERROR", component, message));
+  if (level === Level.Debug) console.debug(format("cyan", "DEBUG", component, message));
+  else if (level === Level.Info) console.info(format("blue", "INFO", component, message));
+  else if (level === Level.Warn) console.warn(format("yellow", "WARN", component, message));
+  else if (level === Level.Error) console.error(format("red", "ERROR", component, message));
   else throw new ParkhiError(ErrorCode.Internal, `unknown level ${level}`);
 }
 

@@ -1,8 +1,8 @@
+import { strict as assert } from "node:assert";
+import { describe, it } from "node:test";
 import { Id3V24Parser } from "../../src/id3V2/id3V24Parser.ts";
 import { concat, encodeAscii, encodeU32, iterateBytes } from "../utils.ts";
 import { makeV24Frame, makeV24Tag } from "./utils.ts";
-import { strict as assert } from "node:assert";
-import { describe, it } from "node:test";
 
 const titleFrame0 = await makeV24Frame("TIT2", encodeAscii("\x00Book"), { doUnsynchronise: true });
 const titleFrame1 = await makeV24Frame("TIT2", encodeAscii("\x00The Book"));

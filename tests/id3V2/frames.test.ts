@@ -1,3 +1,5 @@
+import { strict as assert } from "node:assert";
+import { describe, it } from "node:test";
 import {
   type Chap,
   type Ctoc,
@@ -26,8 +28,6 @@ import {
   makeV24FrameBody,
   makeV24FrameHeader,
 } from "./utils.ts";
-import { strict as assert } from "node:assert";
-import { describe, it } from "node:test";
 
 describe("parseSyncSafeSize", () => {
   it("should parse data", () => {

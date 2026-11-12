@@ -2,7 +2,7 @@ import { Buffer } from "../buffer.ts";
 import { ErrorCode, ParkhiError } from "../error.ts";
 import { useLogger } from "../logging.ts";
 import { MetadataType } from "../metadataType.ts";
-import { type Metadata, type Parser } from "../parser.ts";
+import type { Metadata, Parser } from "../parser.ts";
 import { decodeAscii, parseU32 } from "../utils.ts";
 import { BoxType, type Chap, parseChapName, parseFtyp, parseMoov } from "./boxes.ts";
 
@@ -47,13 +47,13 @@ export class MpegParser implements Parser {
     if (chunk == null) {
       if (!this.ftypFound) throw new ParkhiError(ErrorCode.Unknown, "ftyp box not found");
 
-      if (this.boxSize == 0 && this.state == State.Data) {
+      if (this.boxSize === 0 && this.state === State.Data) {
         this.parseData(this.copy(this.buffer.length));
         this.parseChapters();
         return true;
       }
 
-      if (this.state == State.Size && this.buffer.length == 0) {
+      if (this.state === State.Size && this.buffer.length === 0) {
         this.parseChapters();
         return true;
       }
@@ -66,7 +66,7 @@ export class MpegParser implements Parser {
     let lastLength = this.buffer.length;
     while (consumed) {
       this.parseBox();
-      consumed = this.buffer.length != lastLength;
+      consumed = this.buffer.length !== lastLength;
       lastLength = this.buffer.length;
     }
 
@@ -74,28 +74,28 @@ export class MpegParser implements Parser {
   }
 
   private parseBox() {
-    if (this.state == State.Size && this.buffer.length >= 4) {
-      const [b3, b2, b1, b0] = this.copy(4);
-      this.boxSize = parseU32(b3!, b2!, b1!, b0!);
+    if (this.state === State.Size && this.buffer.length >= 4) {
+      const [b3 = 0, b2 = 0, b1 = 0, b0 = 0] = this.copy(4);
+      this.boxSize = parseU32(b3, b2, b1, b0);
 
-      if (this.boxSize == 1)
+      if (this.boxSize === 1)
         throw new ParkhiError(ErrorCode.Unknown, "boxes with extended size are not supported");
 
       this.state = State.Type;
     }
 
-    if (this.state == State.Type && this.buffer.length >= 4) {
+    if (this.state === State.Type && this.buffer.length >= 4) {
       this.boxType = decodeAscii(this.copy(4));
 
-      if (!this.ftypFound && this.boxType != BoxType.Ftyp)
+      if (!this.ftypFound && this.boxType !== BoxType.Ftyp)
         throw new ParkhiError(ErrorCode.Unknown, `found ${this.boxType} box before ftyp`);
 
       this.state = State.Data;
     }
 
     if (
-      this.state == State.Data &&
-      this.boxSize != 0 &&
+      this.state === State.Data &&
+      this.boxSize !== 0 &&
       this.buffer.length >= this.boxSize - 4 - 4
     ) {
       const data = this.copy(this.boxSize - 4 - 4);
@@ -107,7 +107,7 @@ export class MpegParser implements Parser {
   }
 
   private parseData(data: Uint8Array) {
-    if (this.boxType == BoxType.Ftyp) {
+    if (this.boxType === BoxType.Ftyp) {
       const brands = parseFtyp(data);
 
       let compatible = false;
@@ -125,7 +125,7 @@ export class MpegParser implements Parser {
       return;
     }
 
-    if (this.boxType == BoxType.Moov) {
+    if (this.boxType === BoxType.Moov) {
       const moov = parseMoov(data);
       this.chaps = moov.chaps;
       if (moov.udta) {
